@@ -40,7 +40,7 @@ services:
         generateValue: true
 
   # PostgreSQL Database
-  - type: pspg
+  - type: pg
     name: saas-platform-db
     plan: free
     databaseName: saas_platform
