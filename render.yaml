@@ -39,9 +39,8 @@ services:
       - key: JWT_REFRESH_SECRET
         generateValue: true
 
+databases:
   # PostgreSQL Database
-  - type: pg
-    name: saas-platform-db
+  - name: saas-platform-db
     plan: free
-    databaseName: saas_platform
-    databaseUser: saas_platform_user
+    region: oregon
