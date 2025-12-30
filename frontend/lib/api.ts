@@ -48,13 +48,25 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, {
+    const url = `${API_URL}${endpoint}`;
+    console.log('API Request:', url, options.method || 'GET'); // Debug log
+
+    const response = await fetch(url, {
       ...options,
       headers: headers as HeadersInit,
     });
 
+    console.log('API Response:', response.status, response.statusText); // Debug log
+
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      const errorText = await response.text();
+      console.error('API Error:', errorText); // Debug log
+      let error;
+      try {
+        error = JSON.parse(errorText);
+      } catch {
+        error = { error: errorText || `HTTP ${response.status}: ${response.statusText}` };
+      }
       throw new Error(error.error || 'Request failed');
     }
 

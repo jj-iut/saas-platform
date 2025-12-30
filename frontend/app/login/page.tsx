@@ -19,11 +19,13 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
+      console.log('Attempting login...', { email }) // Debug log
       const response = await api.login(email, password)
       setTokens(response.access_token, response.refresh_token)
       router.push('/dashboard')
       router.refresh()
     } catch (err: any) {
+      console.error('Login error:', err) // Debug log
       setError(err.message || 'Login failed')
     } finally {
       setLoading(false)
