@@ -82,9 +82,11 @@
 ### 3. Настройка проекта
 
 1. **Framework Preset**: Vercel должен автоматически определить Next.js
-2. **Root Directory**: выберите `frontend`
-3. **Build Command**: `npm run build` (уже в package.json)
-4. **Output Directory**: `.next` (по умолчанию для Next.js)
+2. **Root Directory**: **ВАЖНО!** Выберите `frontend` в настройках проекта (Settings → General → Root Directory)
+3. **Build Command**: оставьте по умолчанию или `npm run build`
+4. **Output Directory**: оставьте по умолчанию (`.next` для Next.js)
+
+**Примечание**: `rootDirectory` нельзя указывать в `vercel.json` - только через Dashboard!
 
 ### 4. Environment Variables
 
