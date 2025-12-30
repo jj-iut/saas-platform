@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { api, User, Restaurant, isSuperAdmin } from '@/lib/api'
-import { clearTokens, isAuthenticated } from '@/lib/auth'
+import { api, User, Restaurant } from '@/lib/api'
+import { clearTokens, isAuthenticated, isSuperAdmin } from '@/lib/auth'
 
 export default function RestaurantsPage() {
   const router = useRouter()
