@@ -3,12 +3,25 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
+	"github.com/yourcompany/saas-platform/internal/config"
 	"github.com/yourcompany/saas-platform/internal/handlers"
+	"github.com/yourcompany/saas-platform/internal/middleware"
+	authModule "github.com/yourcompany/saas-platform/internal/modules/auth"
+	restaurantsModule "github.com/yourcompany/saas-platform/internal/modules/restaurants"
 )
 
-func SetupRouter(healthHandler *handlers.HealthHandler) *gin.Engine {
+func SetupRouter(
+	cfg *config.Config,
+	healthHandler *handlers.HealthHandler,
+	authHandler *authModule.Handler,
+	restaurantsHandler *restaurantsModule.Handler,
+) *gin.Engine {
 	// Set Gin mode based on environment
-	gin.SetMode(gin.ReleaseMode)
+	if cfg.Server.Environment == "development" {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	r := gin.New()
 
@@ -21,12 +34,36 @@ func SetupRouter(healthHandler *handlers.HealthHandler) *gin.Engine {
 	// Health check endpoint
 	r.GET("/health", healthHandler.HealthCheck)
 
-	// API routes
-	// v1 := r.Group("/api/v1")
-	// {
-	// 	// Add your API routes here
-	// 	// Example: v1.GET("/users", userHandler.GetUsers)
-	// }
+	// Public routes
+	api := r.Group("/api/v1")
+	{
+		// Auth routes (public)
+		auth := api.Group("/auth")
+		{
+			auth.POST("/register", authHandler.Register)
+			auth.POST("/login", authHandler.Login)
+			auth.POST("/refresh", authHandler.RefreshToken)
+		}
+
+		// Protected routes
+		protected := api.Group("")
+		protected.Use(middleware.AuthMiddleware(cfg.JWT.AccessSecret))
+		{
+			// User routes
+			protected.GET("/me", authHandler.GetMe)
+
+			// Restaurant routes (only superadmin)
+			restaurants := protected.Group("/restaurants")
+			restaurants.Use(middleware.RequireSuperAdmin())
+			{
+				restaurants.GET("", restaurantsHandler.GetAll)
+				restaurants.GET("/:id", restaurantsHandler.GetByID)
+				restaurants.POST("", restaurantsHandler.Create)
+				restaurants.PUT("/:id", restaurantsHandler.Update)
+				restaurants.DELETE("/:id", restaurantsHandler.Delete)
+			}
+		}
+	}
 
 	return r
 }

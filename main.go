@@ -16,6 +16,8 @@ import (
 	"github.com/yourcompany/saas-platform/internal/database"
 	"github.com/yourcompany/saas-platform/internal/handlers"
 	"github.com/yourcompany/saas-platform/internal/router"
+	authModule "github.com/yourcompany/saas-platform/internal/modules/auth"
+	restaurantsModule "github.com/yourcompany/saas-platform/internal/modules/restaurants"
 )
 
 func main() {
@@ -42,8 +44,18 @@ func main() {
 	// Initialize handlers
 	healthHandler := handlers.NewHealthHandler(db)
 
+	// Initialize auth module
+	authRepo := authModule.NewRepository(db)
+	authService := authModule.NewService(authRepo, cfg.JWT)
+	authHandler := authModule.NewHandler(authService)
+
+	// Initialize restaurants module
+	restaurantsRepo := restaurantsModule.NewRepository(db)
+	restaurantsService := restaurantsModule.NewService(restaurantsRepo)
+	restaurantsHandler := restaurantsModule.NewHandler(restaurantsService)
+
 	// Setup router
-	r := router.SetupRouter(healthHandler)
+	r := router.SetupRouter(cfg, healthHandler, authHandler, restaurantsHandler)
 
 	// Create HTTP server
 	srv := &http.Server{

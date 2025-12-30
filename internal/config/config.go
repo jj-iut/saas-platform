@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
+	JWT      JWTConfig
 }
 
 type ServerConfig struct {
@@ -32,6 +33,13 @@ type DatabaseConfig struct {
 	ConnMaxIdleTime time.Duration
 }
 
+type JWTConfig struct {
+	AccessSecret  string
+	RefreshSecret string
+	AccessTTL     time.Duration
+	RefreshTTL    time.Duration
+}
+
 func Load() *Config {
 	return &Config{
 		Server: ServerConfig{
@@ -52,6 +60,12 @@ func Load() *Config {
 			MaxIdleConns:    parseInt(getEnv("DB_MAX_IDLE_CONNS", "5")),
 			ConnMaxLifetime: parseDuration(getEnv("DB_CONN_MAX_LIFETIME", "5m")),
 			ConnMaxIdleTime: parseDuration(getEnv("DB_CONN_MAX_IDLE_TIME", "10m")),
+		},
+		JWT: JWTConfig{
+			AccessSecret:  getEnv("JWT_ACCESS_SECRET", "your-access-secret-key-minimum-32-characters-long"),
+			RefreshSecret: getEnv("JWT_REFRESH_SECRET", "your-refresh-secret-key-minimum-32-characters-long"),
+			AccessTTL:     parseDuration(getEnv("JWT_ACCESS_TTL", "15m")),
+			RefreshTTL:    parseDuration(getEnv("JWT_REFRESH_TTL", "168h")),
 		},
 	}
 }
