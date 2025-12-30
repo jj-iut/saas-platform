@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: saas-platform-postgres-dev
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-saas_platform}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - saas-network-dev
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: saas-platform-backend-dev
+    environment:
+      # Server
+      SERVER_PORT: ${SERVER_PORT:-8080}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      
+      # Database
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-saas_platform}
+      DB_SSLMODE: disable
+      
+      # JWT
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-secret-key-min-32-chars-for-development}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret-key-min-32-chars}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-15m}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-168h}
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    volumes:
+      - .:/app
+      - /app/vendor
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - saas-network-dev
+    command: go run main.go
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend.dev
+    container_name: saas-platform-frontend-dev
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080/api/v1}
+      NODE_ENV: ${NODE_ENV:-development}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend
+    networks:
+      - saas-network-dev
+    working_dir: /app
+    command: npm run dev
+    restart: unless-stopped
+
+volumes:
+  postgres_data_dev:
+    driver: local
+
+networks:
+  saas-network-dev:
+    driver: bridge
+

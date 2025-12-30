@@ -1,0 +1,47 @@
+services:
+  # Backend Service (Go)
+  - type: web
+    name: saas-platform-backend
+    env: go
+    region: oregon
+    plan: free
+    buildCommand: go mod download && go build -o main .
+    startCommand: ./main
+    envVars:
+      - key: SERVER_PORT
+        value: 8080
+      - key: ENVIRONMENT
+        value: production
+      - key: DB_HOST
+        fromDatabase:
+          name: saas-platform-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: saas-platform-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: saas-platform-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: saas-platform-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: saas-platform-db
+          property: database
+      - key: DB_SSLMODE
+        value: require
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+
+  # PostgreSQL Database
+  - type: pspg
+    name: saas-platform-db
+    plan: free
+    databaseName: saas_platform
+    databaseUser: saas_platform_user

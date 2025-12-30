@@ -1,0 +1,51 @@
+# Frontend
+frontend/node_modules
+frontend/.next
+frontend/.vercel
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Environment
+.env
+.env.local
+.env*.local
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Misc
+Rave.dat
+dsp_stereo_tool.ini
