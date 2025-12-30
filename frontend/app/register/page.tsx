@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { api, setTokens } from '@/lib/api'
+import { api } from '@/lib/api'
+import { setTokens } from '@/lib/auth'
 
 export default function RegisterPage() {
   const router = useRouter()
