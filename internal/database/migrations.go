@@ -30,17 +30,29 @@ func RunMigrations(db *sql.DB) error {
 	if count == 0 {
 		// Initial migration - create users table with roles
 		migration := `
-			CREATE TYPE user_role AS ENUM ('user', 'admin', 'superadmin');
+			-- Create enum type if it doesn't exist
+			DO $$ BEGIN
+				CREATE TYPE user_role AS ENUM ('user', 'admin', 'superadmin');
+			EXCEPTION
+				WHEN duplicate_object THEN null;
+			END $$;
 			
+			-- Create users table if it doesn't exist
 			CREATE TABLE IF NOT EXISTS users (
 				id BIGSERIAL PRIMARY KEY,
 				email VARCHAR(255) UNIQUE NOT NULL,
 				password_hash VARCHAR(255) NOT NULL,
-				role user_role DEFAULT 'user' NOT NULL,
 				name VARCHAR(255),
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 			);
+
+			-- Add role column if it doesn't exist
+			DO $$ BEGIN
+				ALTER TABLE users ADD COLUMN role user_role DEFAULT 'user' NOT NULL;
+			EXCEPTION
+				WHEN duplicate_column THEN null;
+			END $$;
 
 			CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 			CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
